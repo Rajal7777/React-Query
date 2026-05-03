@@ -21,6 +21,7 @@ export default function NewEvent() {
       // Mark the 'events' query as stale
       // React Query will refetch the updated events list
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      navigate("/events");
     },
   });
 
