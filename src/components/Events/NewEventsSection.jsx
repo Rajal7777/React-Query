@@ -5,10 +5,15 @@ import LoadingIndicator from "../UI/LoadingIndicator.jsx";
 import ErrorBlock from "../UI/ErrorBlock.jsx";
 import EventItem from "./EventItem.jsx";
 
+//  staleTime defines the duration for which fetched data is considered fresh. React Query will read directly from the cache without making a new network request.
+
+// gcTIme is the setting that determines how long inactive data remains in the cache before it is deleted to free up memory.
 export default function NewEventsSection() {
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["events"],
     queryFn: fetchEvents,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 2,
   });
 
   let content;
