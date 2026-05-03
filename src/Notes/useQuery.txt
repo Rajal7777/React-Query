@@ -1,0 +1,21 @@
+queryKey: ['events', { search: searchTerm }],
+This uniquely identifies the query.
+
+React Query uses this key to:
+
+.cache data
+.know when to refetch
+
+If searchTerm changes, the query key changes too.
+//['events', { search: 'music' }]
+
+
+enabled: searchTerm !== undefined
+This prevents the query from running immediately when the component first loads.
+
+Without this, it would fetch all events right away.
+
+The query runs only after the user enters a search term.
+
+Before search: disabled
+After search: enabled
