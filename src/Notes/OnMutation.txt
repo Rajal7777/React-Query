@@ -1,0 +1,11 @@
+
+A callback that executes when a mutation operation completes successfully.
+
+queryClient.invalidateQueries(...)
+Marks the cached data for ['events'] as stale/outdated.
+
+queryKey: ['events']
+Identifies which cached query to invalidate.
+
+refetchType: 'none'
+Critical option - prevents automatic refetching after invalidation.
