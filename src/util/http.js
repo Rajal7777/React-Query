@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 
- export const queryClient = new QueryClient();
+export const queryClient = new QueryClient();
 
 export async function fetchEvents({ signal, searchTerm }) {
   //searchTerms -> search data from the input field
@@ -34,8 +34,8 @@ export async function createNewEvent(eventData) {
     },
   });
 
-  if(!response.ok){
-    const error = new Error('An error occured while creating the event');
+  if (!response.ok) {
+    const error = new Error("An error occured while creating the event");
     error.code = response.status;
     error.info = await response.json();
     throw error; //throw error object and return
@@ -44,14 +44,15 @@ export async function createNewEvent(eventData) {
   const { event } = await response.json();
 
   return event;
-
 }
 
-export async function fetchSelectedImages({ signal}){
-  const response = await fetch(`http://localhost:3000/events/images`, {  signal });
+export async function fetchSelectedImages({ signal }) {
+  const response = await fetch(`http://localhost:3000/events/images`, {
+    signal,
+  });
 
-  if (!response.ok){
-    const error = new Error('An error occurred while fetching the images');
+  if (!response.ok) {
+    const error = new Error("An error occurred while fetching the images");
     error.code = response.status;
     error.info = await response.json();
     throw error;
@@ -60,4 +61,35 @@ export async function fetchSelectedImages({ signal}){
   const { images } = await response.json();
 
   return images;
+}
+
+export async function fetchEvent({ id, signal }) {
+  const response = await fetch(`http://localhost:3000/events/${id}`, { signal });
+
+  if (!response.ok){
+    const error = new Error('An error occurre while fetching the event');
+    console.log('error obj',error)
+    error.code = response.status;
+    error.info = await response.json();
+    throw error;
+  }
+
+  const { event } = await response.json();
+  return event;
+}
+
+export async function deleteEvent({id}){
+  const response = await fetch(`http://localhost:3000/events/${id}`,{
+    method: 'DELETE',
+  })
+
+  if(!response.ok){
+    const error = new Error('An error occurred while deleting the event');
+    error.code = response.status;
+    error.info = await response.json();
+    throw error;
+  }
+
+  const { event } = response.json();
+  return event;
 }

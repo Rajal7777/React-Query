@@ -1,0 +1,23 @@
+function fetchEvent(params) {
+  const id = params.id;
+  const signal = params.signal;
+}
+function fetchEvent({ id, signal }) {
+  // directly get id and signal
+}
+
+
+🔥 What is signal?
+
+signal is used to cancel the request.
+
+Example:
+
+User leaves page
+Component unmounts
+Query is no longer needed
+
+React Query aborts the fetch:
+
+fetch(url, { signal })
+signal = "cancel this request if needed"
