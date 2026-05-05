@@ -9,7 +9,7 @@ import { fetchEvent, queryClient, updateEvent } from "../../util/http.js";
 
 export default function EditEvent() {
   const navigate = useNavigate();
-  const params = useParams;
+  const params = useParams();
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["events", params.id],
@@ -97,7 +97,7 @@ export default function EditEvent() {
   }
 
   function handleSubmit(formData) {
-    mutate({ event: { id: params.id, ...formData } });
+    mutate({ id: params.id, event: formData });
     navigate("../");
   }
 
