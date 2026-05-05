@@ -21,3 +21,8 @@ React Query aborts the fetch:
 
 fetch(url, { signal })
 signal = "cancel this request if needed"
+
+({ signal }) => fetchEvent({ signal, id: params.id })
+This is the function that actually fetches data
+React Query gives you a signal to:
+cancel request if component unmounts

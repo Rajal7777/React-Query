@@ -12,10 +12,21 @@ export default function EventDetails() {
   //fetch editing data
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["events", params.id],
+    //React Query gives a signal to cancel request if the component unmounts before the request completes or its primary job is to let you "cancel" an asynchronous operation (like a network request) before it finishes when user cancel the req or go back.
     queryFn: ({ signal }) => fetchEvent({ signal, id: params.id }),
  });
 
-  const { mutate} = useMutation({
+
+ //useMutation is for (POST,PUT,DELETE)
+ //used for change of data on the server and to handle side effects after the mutation (like updating the UI or invalidating queries).
+
+ //invalidateQueries 
+ // Marks cached data as outdated , so next time the query is accessed, React Query will refetch the data to ensure the UI reflects the most current state of the server.
+
+ //refetchType: 'none'
+//it does not immediately refetch the data just marks it as stale/invalid.
+
+   const { mutate} = useMutation({
     mutationFn: deleteEvent,
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -31,7 +42,7 @@ export default function EventDetails() {
   }
  
   let content;
-  
+
   if (isPending){
     content = (
       <div className="center" id="event-details-content">
