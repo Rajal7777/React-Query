@@ -1,68 +1,59 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+  Link,
+  redirect,
+  useNavigate,
+  useParams,
+  useSubmit,
+  useNavigation,
+} from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
-import Modal from "../UI/Modal.jsx";
-import EventForm from "./EventForm.jsx";
-import LoadingIndicator from "../UI/LoadingIndicator.jsx";
-import ErrorBlock from "../UI/ErrorBlock.jsx";
-import { fetchEvent, queryClient, updateEvent } from "../../util/http.js";
+import Modal from '../UI/Modal.jsx';
+import EventForm from './EventForm.jsx';
+import { fetchEvent, updateEvent, queryClient } from '../../util/http.js';
+import ErrorBlock from '../UI/ErrorBlock.jsx';
 
 export default function EditEvent() {
   const navigate = useNavigate();
+  const { state } = useNavigation();
+  const submit = useSubmit();
   const params = useParams();
 
-  const { data, isPending, isError, error } = useQuery({
-    queryKey: ["events", params.id],
+  const { data, isError, error } = useQuery({
+    queryKey: ['events', params.id],
     queryFn: ({ signal }) => fetchEvent({ signal, id: params.id }),
+    staleTime: 10000
   });
 
-  const { mutate } = useMutation({
-    mutationFn: updateEvent,
-    //onMutate -> Runs before the request is sent.
-    //it get the current data in the parameter
-    //(data) is whatever you pass to the mutate mutate({event: {id: 1,title: "New });
-    onMutate: async (data) => {
-      //extracts the updated event data from the input
-      const newEvent = data.event;
+  // const { mutate } = useMutation({
+  //   mutationFn: updateEvent,
+  //   onMutate: async (data) => {
+  //     const newEvent = data.event;
 
-      // 1) Stops any ongoing fetch for this event.
-      // 2) prevents overwriting optimistic update
-      await queryClient.cancelQueries({ queryKey: ["events", params.id] });
+  //     await queryClient.cancelQueries({ queryKey: ['events', params.id] });
+  //     const previousEvent = queryClient.getQueryData(['events', params.id]);
 
-      //saves current(old) event data / this is backup incase somethg fails
-      const previousEvent = queryClient.getQueriesData(["events", params.id]);
+  //     queryClient.setQueryData(['events', params.id], newEvent);
 
-      //Immediately updates the cache with new data.
-      //UI updates instantly (before server responds).
-      queryClient.setQueriesData(["events", params.id], newEvent);
+  //     return { previousEvent };
+  //   },
+  //   onError: (error, data, context) => {
+  //     queryClient.setQueryData(['events', params.id], context.previousEvent);
+  //   },
+  //   onSettled: () => {
+  //     queryClient.invalidateQueries(['events', params.id]);
+  //   },
+  // });
 
-      //incase of error return the prev(currn) event data
-      return { previousEvent };
-    },
-    //runs if api request fails
-    onError: (error, data, context) => {
-      //context is the return value of onMutate (previousEvent)
-      //rollback to the previous event data
-      //restore the old data from backup// rollback
-      queryClient.setQueriesData(["events", params.id], context.previousEvent);
-    },
-    //runs no matter success or fails
-    onSettled: () => {
-      //refetch fresh data from the server
-      //ensures UI is 100% accurate
-      queryClient.invalidateQueries(["events", params.id]);
-    },
-  });
+  function handleSubmit(formData) {
+    submit(formData, { method: 'PUT' });
+  }
+
+  function handleClose() {
+    navigate('../');
+  }
 
   let content;
-
-  if (isPending) {
-    content = (
-      <div className="center">
-        <LoadingIndicator />
-      </div>
-    );
-  }
 
   if (isError) {
     content = (
@@ -71,7 +62,7 @@ export default function EditEvent() {
           title="Failed to load event"
           message={
             error.info?.message ||
-            "Failed to load event. Please check your inputs and try again later."
+            'Failed to load event. Please check your inputs and try again later.'
           }
         />
         <div className="form-actions">
@@ -86,24 +77,36 @@ export default function EditEvent() {
   if (data) {
     content = (
       <EventForm inputData={data} onSubmit={handleSubmit}>
-        <Link to="../" className="button-text">
-          Cancel
-        </Link>
-        <button type="submit" className="button">
-          Update
-        </button>
+        {state === 'submitting' ? (
+          <p>Sending data...</p>
+        ) : (
+          <>
+            <Link to="../" className="button-text">
+              Cancel
+            </Link>
+            <button type="submit" className="button">
+              Update
+            </button>
+          </>
+        )}
       </EventForm>
     );
   }
 
-  function handleSubmit(formData) {
-    mutate({ id: params.id, event: formData });
-    navigate("../");
-  }
-
-  function handleClose() {
-    navigate("../");
-  }
-
   return <Modal onClose={handleClose}>{content}</Modal>;
+}
+
+export function loader({ params }) {
+  return queryClient.fetchQuery({
+    queryKey: ['events', params.id],
+    queryFn: ({ signal }) => fetchEvent({ signal, id: params.id }),
+  });
+}
+
+export async function action({ request, params }) {
+  const formData = await request.formData();
+  const updatedEventData = Object.fromEntries(formData);
+  await updateEvent({ id: params.id, event: updatedEventData });
+  await queryClient.invalidateQueries(['events']);
+  return redirect('../');
 }

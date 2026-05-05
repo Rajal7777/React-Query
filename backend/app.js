@@ -160,7 +160,8 @@ app.delete('/events/:id', async (req, res) => {
   if (eventIndex === -1) {
     return res.status(404).json({ message: 'Event not found' });
   }
-
+   
+  //remove the item from start index{eventIndex=3} and remove 1 item
   events.splice(eventIndex, 1);
 
   await fs.writeFile('./data/events.json', JSON.stringify(events));
